@@ -1,0 +1,28 @@
+# Node
+node_modules/
+**/node_modules/
+
+# Builds
+/dist/
+/build/
+**/dist/
+**/build/
+
+# Env
+.env
+.env.*
+**/.env
+**/.env.*
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs
+*.log
+
+# Misc
+.DS_Store
+Thumbs.db
+.vscode/

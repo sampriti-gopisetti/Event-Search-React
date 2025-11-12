@@ -1,0 +1,36 @@
+*Entry 1*
+
+- Prompt (Clarity):
+  > "Ensure uniform desktop min-height and consistent two-column layout for Info, Artist, and Venue tabs in EventDetail.tsx. On desktop, all tabs should have the same visual height (min-height: 30rem on large screens). The Info tab must preserve its two-column grid even when the seatmap is missing by maintaining an empty placeholder column. The Venue tab should use a two-column grid when an image is present; if no image, the details should span both columns to avoid shrinking. Apply a reusable CSS utility class (.tab-body) for the shared min-height to avoid hard-coded values across tabs."
+
+- Issues (Specificity):
+  > The Info tab was collapsing to a single column when no seatmap was available, causing inconsistent width compared to other tabs. The Venue tab shrank horizontally when no image was present because the grid container disappeared entirely. No centralized min-height utility existed, leading to repeated inline styles and potential drift across tabs.
+
+- Fix (Correctness):
+  > Added `.tab-body { @apply lg:min-h-[30rem]; }` utility in index.css.
+  > Wrapped each tab's content in a `<div className="tab-body ...">` container in EventDetail.tsx.
+  > For the Info tab, kept the two-column grid (`lg:grid-cols-2`) and added a conditional empty `<div className="hidden lg:block" />` when seatmap is null to preserve column space.
+  > For the Venue tab, used `grid-cols-1 lg:grid-cols-2` with conditional column spans: when no image, details use `lg:col-span-2`; otherwise, image takes one column and details take the other.
+
+- Explanation (Depth):
+  > This fix ensures visual stability and consistent user experience across tabs by preventing layout shifts when optional content is missing. The centralized `.tab-body` utility promotes DRY principles and simplifies future adjustments. The conditional column logic maintains responsive design without sacrificing desktop alignment, which is critical for meeting rubric requirements on pixel-aligned tabs and professional UI consistency.
+
+*Entry 2*
+
+- Prompt (Clarity):
+  > "Replace the native HTML <select> element for the Category dropdown in Search.tsx with a custom accessible listbox component. The listbox must integrate with react-hook-form using the Controller component, display the current selection with a chevron icon, open a dropdown panel on click (absolute positioned, z-indexed above other elements), allow selection via mouse, close on selection, and constrain the dropdown width to match the input field width. Maintain the same visual styling (border, padding, rounded corners) and keep the desktop (sm:w-44) and mobile (w-full) responsive widths unchanged."
+
+- Issues (Specificity):
+  > On Windows, the native <select> dropdown was rendering an oversized OS-native menu that extended beyond the input field's boundaries, creating a jarring UX inconsistency. The native control was not easily stylable to match the design system, and the wide dropdown violated the visual constraints required by the rubric reference images.
+
+- Fix (Correctness):
+  > Imported `Controller` from react-hook-form and added `control` to the form hook destructure.
+  > Wrapped the Category field in a `<Controller name="category" control={control} rules={{ required: true }} render={({ field }) => ...}>`.
+  > Replaced the <select> with a <button> displaying `field.value` and a downward chevron SVG, styled identically to other inputs.
+  > Added a state `const [openCategory, setOpenCategory] = useState(false)` to control dropdown visibility.
+  > Rendered a conditional `<ul className="absolute z-50 mt-1 w-full ...">` below the button when `openCategory` is true, listing all categories as clickable `<li><button>` elements.
+  > Each option button calls `field.onChange(c); setOpenCategory(false)` on click to update the form value and close the dropdown.
+  > Kept a hidden <select> with the same name for semantic fallback if needed.
+
+- Explanation (Depth):
+  > This solution provides full control over dropdown styling and width, eliminating platform-specific rendering quirks. By using react-hook-form's Controller, form state remains fully managed and validated. The custom listbox is more accessible (aria-haspopup, role="option") and visually consistent with the rest of the form. It prevents the Windows oversized dropdown issue while maintaining identical desktop/mobile responsive behavior, ensuring compliance with the rubric's UI fidelity requirements and enhancing cross-platform consistency.

@@ -1,0 +1,51 @@
+/* Tailwind layers via standard CSS imports to avoid unknown at-rule warnings */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+:root {
+  color-scheme: light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background-color: #ffffff;
+  color: #111827; /* gray-900 */
+}
+
+/* Reserve space for the vertical scrollbar so layout width doesn't shift
+   between pages that do and don't overflow. Modern browsers support
+   scrollbar-gutter; overflow-y: scroll is a fallback. */
+/* Apply stable scrollbar gutter and always-reserved vertical scrollbar
+   to the likely scroll containers to prevent width shifts */
+
+/* Define utility classes directly (no @layer to satisfy strict linters) */
+/* Large screen min-height for tab bodies */
+@media (min-width: 1024px) {
+  .tab-body { min-height: 30rem; }
+}
+/* Centered responsive container: full width mobile, 80% from md up with horizontal padding */
+.site-container {
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem; /* px-4 */
+  padding-right: 1rem;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .site-container { width: 80%; }
+}
+html {
+  scrollbar-gutter: stable both-edges;
+  overflow-y: scroll; /* reserve space even when not overflowing */
+}
+body {
+  scrollbar-gutter: stable both-edges;
+  overflow-y: scroll;
+}
+#root, main {
+  scrollbar-gutter: stable both-edges;
+}

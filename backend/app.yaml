@@ -1,0 +1,12 @@
+runtime: nodejs20
+instance_class: F1
+
+handlers:
+# This one handler sends ALL traffic to your Node.js server
+- url: /.*
+  script: auto
+
+# Make sure your environment variables are set
+env_variables:
+  NODE_ENV: production
+  PORT: 8080

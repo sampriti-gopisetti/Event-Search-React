@@ -1,0 +1,8 @@
+# Python Dependencies
+# This project primarily uses Node.js/npm for both frontend and backend.
+# If you need Python tooling for deployment scripts or data processing, list packages here.
+# Otherwise, refer to package.json files in frontend/ and backend/ directories.
+
+# Example Python dependencies (uncomment if needed):
+# requests==2.31.0
+# python-dotenv==1.0.0

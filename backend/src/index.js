@@ -84,25 +84,73 @@ app.get('/api/suggest', async (req, res) => {
 
 app.get('/api/events', async (req, res) => {
   try {
-    const { keyword = '', segmentName, radius = '10', unit = 'miles', lat, lon } = req.query;
+    const { keyword = '', segmentId, radius = '10', unit = 'miles', lat, lon, location } = req.query;
     const kw = keyword.toString().trim();
     if (!kw) return res.status(400).json({ error: 'keyword required' });
     if (!process.env.TM_API_KEY) return res.status(500).json({ error: 'TM_API_KEY missing' });
 
-    // Compute geoPoint geohash if lat/lon provided, else omit
+    // Determine lat/lon based on priority: direct lat/lon > location > IP-based
+    let finalLat = lat;
+    let finalLon = lon;
+
+    // If lat/lon not provided directly, check location parameter
+    if (!finalLat || !finalLon) {
+      const locationStr = (location || '').toString().trim();
+      
+      if (locationStr && locationStr !== 'Current Location') {
+        // Use Google Geocoding API to convert city name to coordinates
+        if (process.env.GOOGLE_API_KEY) {
+          try {
+            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(locationStr)}&key=${process.env.GOOGLE_API_KEY}`;
+            const geocodeRes = await fetch(geocodeUrl);
+            if (geocodeRes.ok) {
+              const geocodeData = await geocodeRes.json();
+              if (geocodeData.results && geocodeData.results.length > 0) {
+                finalLat = geocodeData.results[0].geometry.location.lat;
+                finalLon = geocodeData.results[0].geometry.location.lng;
+              }
+            }
+          } catch (e) {
+            console.error('Google Geocoding error', e);
+          }
+        }
+      } else {
+        // Use ipinfo.io to get coordinates from client IP
+        if (process.env.IPINFO_TOKEN) {
+          try {
+            const clientIp = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket.remoteAddress;
+            const ipinfoUrl = `https://ipinfo.io/${clientIp}?token=${process.env.IPINFO_TOKEN}`;
+            const ipinfoRes = await fetch(ipinfoUrl);
+            if (ipinfoRes.ok) {
+              const ipinfoData = await ipinfoRes.json();
+              if (ipinfoData.loc) {
+                const [ipLat, ipLon] = ipinfoData.loc.split(',');
+                finalLat = ipLat;
+                finalLon = ipLon;
+              }
+            }
+          } catch (e) {
+            console.error('ipinfo.io error', e);
+          }
+        }
+      }
+    }
+
+    // Compute geoPoint geohash if lat/lon available
     let geoPoint = undefined;
-    if (lat && lon) {
+    if (finalLat && finalLon) {
       try {
         const ngeohash = require('ngeohash');
-        geoPoint = ngeohash.encode(parseFloat(lat), parseFloat(lon));
+        geoPoint = ngeohash.encode(parseFloat(finalLat), parseFloat(finalLon));
       } catch (e) {
         // fallback: omit geohash
       }
     }
+    
     const params = new URLSearchParams();
     params.set('apikey', process.env.TM_API_KEY);
     params.set('keyword', kw);
-    if (segmentName && segmentName !== 'All') params.set('segmentName', segmentName.toString());
+    if (segmentId && segmentId !== 'All') params.set('segmentId', segmentId.toString());
     params.set('radius', radius.toString());
     params.set('unit', unit.toString());
     if (geoPoint) params.set('geoPoint', geoPoint);

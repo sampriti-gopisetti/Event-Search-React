@@ -84,7 +84,8 @@ app.get('/api/suggest', async (req, res) => {
 
 app.get('/api/events', async (req, res) => {
   try {
-    const { keyword = '', segmentId, radius = '10', unit = 'miles', lat, lon, location } = req.query;
+    const { keyword = '', segmentId, radius: radiusRaw, distance, unit = 'miles', lat, lon, location } = req.query;
+    const radius = (radiusRaw ?? distance ?? '10').toString();
     const kw = keyword.toString().trim();
     if (!kw) return res.status(400).json({ error: 'keyword required' });
     if (!process.env.TM_API_KEY) return res.status(500).json({ error: 'TM_API_KEY missing' });
@@ -136,6 +137,9 @@ app.get('/api/events', async (req, res) => {
       }
     }
 
+    console.log('events query', { keyword: kw, segmentId, radius, unit, location, lat, lon });
+    console.log('geocode result', { finalLat, finalLon });
+
     // Compute geoPoint geohash if lat/lon available
     let geoPoint = undefined;
     if (finalLat && finalLon) {
@@ -146,6 +150,8 @@ app.get('/api/events', async (req, res) => {
         // fallback: omit geohash
       }
     }
+    
+    console.log('geoPoint', geoPoint);
     
     const params = new URLSearchParams();
     params.set('apikey', process.env.TM_API_KEY);

@@ -10,3 +10,6 @@ handlers:
 env_variables:
   NODE_ENV: production
   PORT: 8080
+  TM_API_KEY: Pw0ENtXN5YXCOjYdlkCGAD0TsSV4mcXC
+  GOOGLE_API_KEY: AIzaSyBlbMWz8nLKESmKj4C5mZXHdPCnLJlDf3o
+  IPINFO_TOKEN: 3ef8c463a0953f

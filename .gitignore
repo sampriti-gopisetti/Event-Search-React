@@ -26,3 +26,7 @@ logs
 .DS_Store
 Thumbs.db
 .vscode/
+
+# GCD
+app.yaml
+backend/app.yaml
